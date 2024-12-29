@@ -1,0 +1,9 @@
+.board{
+    display: grid;
+    min-width: 320px;
+    width: 80%;
+    max-width: 640px;
+    aspect-ratio: 1/1;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+}
