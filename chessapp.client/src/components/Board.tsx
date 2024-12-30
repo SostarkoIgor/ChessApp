@@ -18,6 +18,28 @@ const toSquareNotation = (row: number, col: number, color: string) : string => {
   }
 }
 
+//converts square notation to row and col
+const fromSquareNotation = (notation: string, color: string): { row: number; col: number } => {
+  const column = notation[0]
+  const rowNotation = parseInt(notation[1])
+
+  if (color === 'white') {
+    const col = column.charCodeAt(0) - 'a'.charCodeAt(0)
+    const row = 8 - rowNotation
+    return { row, col }
+  } else {
+    const col = 7 - (column.charCodeAt(0) - 'a'.charCodeAt(0))
+    const row = rowNotation - 1
+    return { row, col }
+  }
+}
+
+//get available squares for a piece
+const getAvailableSquares = (chess: Chess, row: number, col: number, boardRefColor: string) => {
+  let square = toSquareNotation(row, col, boardRefColor) 
+  return chess.moves({square: square, verbose: true}).map(m=>m.to)
+}
+
 //gets the piece on the square in format pw, pb, rw, rb, etc, where first letter denominates piece and second letter denotes color
 const pieceOnSquare = (chess: Chess, row: number, col: number, color: string) => {
   let square = toSquareNotation(row, col, color)
@@ -31,16 +53,21 @@ const Board: React.FC = () => {
   const [board, setBoard] = React.useState<JSX.Element[] | null>([]) //array of squares
   const [boardRefColor, setboardRefColor] = React.useState<string>('white') //reference color of board, if white bottom row is A
   const [whiteMove, setWhiteMove] = React.useState<boolean>(true) //whose turn it is
+  const [isGameOver, setIsGameOver] = React.useState<boolean>(false)
+  const [legalMoves, setLegalMoves] = React.useState<string[]>([])
 
-  let lastClickedSquare: {row: number, col: number} | null =  null//coordinates of last clicked square, we use it to make move
+  const [lastClickedSquare, setLastClickedSquare] = React.useState<{row: number, col: number} | null>(null)
+  //let lastClickedSquare: {row: number, col: number} | null =  null//coordinates of last clicked square, we use it to make move
 
   const onClick = (row: number, col: number) => {//function that gets called by square component when square is clicked
+    if (isGameOver) return
     const square = {row: row, col: col}
     const squareNotation = toSquareNotation(row, col, boardRefColor) //we need square notation to make a move
     const getSquare = chess.get(squareNotation) //we check if anything is on the square
     
     if (lastClickedSquare == null && getSquare) { //if no square was clicked before (or move was made on last click)
-      lastClickedSquare = square
+      setLegalMoves(getAvailableSquares(chess, row, col, boardRefColor))
+      setLastClickedSquare(square)
       return
     }
     else  {
@@ -48,12 +75,16 @@ const Board: React.FC = () => {
         let move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation})
         if (move){
           setWhiteMove(!whiteMove) //we change whose move it is, this is mainly here for useEffect rendering
+          if (chess.isGameOver()){
+            setIsGameOver(true)
+          }
         }
       }
       catch(e){ //if move is invalid
         console.log(e)
       }
-      lastClickedSquare = null //we reset
+      setLegalMoves([])
+      setLastClickedSquare(null)
       return
     }
   }
@@ -63,13 +94,18 @@ const Board: React.FC = () => {
       const boardTemp = []
       for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
-          boardTemp.push(<Square key={i * 8 + j} row={i} col={j} chess={chess} piece={pieceOnSquare(chess, i, j, boardRefColor)} onClick={onClick}/>)
+          boardTemp.push(
+            <Square key={i * 8 + j} row={i} col={j} chess={chess} 
+                    piece={pieceOnSquare(chess, i, j, boardRefColor)} 
+                    onClick={onClick} isHighlighted={legalMoves.includes(toSquareNotation(i, j, boardRefColor))}
+                    isClicked={lastClickedSquare?.row === i && lastClickedSquare?.col === j}/>
+          )
         }
       }
       setBoard(boardTemp)
     }
     start()
-  }, [chess, whiteMove])
+  }, [chess, whiteMove, lastClickedSquare])
 
  
 

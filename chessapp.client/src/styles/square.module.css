@@ -12,3 +12,20 @@
 .dark{
     background-color: #b58863;
 }
+
+.light.clicked{
+    background-color: #ab9b81;
+}
+
+.dark.clicked{
+    background-color: #654931;
+}
+
+.highlight{
+    position: absolute;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    background-color: rgb(75, 110, 56);
+
+}
