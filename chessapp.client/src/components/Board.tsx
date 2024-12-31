@@ -54,10 +54,9 @@ const Board: React.FC = () => {
   const [boardRefColor, setboardRefColor] = React.useState<string>('white') //reference color of board, if white bottom row is A
   const [whiteMove, setWhiteMove] = React.useState<boolean>(true) //whose turn it is
   const [isGameOver, setIsGameOver] = React.useState<boolean>(false)
-  const [legalMoves, setLegalMoves] = React.useState<string[]>([])
+  const [legalMoves, setLegalMoves] = React.useState<string[]>([]) //legal moves of selected piece
 
-  const [lastClickedSquare, setLastClickedSquare] = React.useState<{row: number, col: number} | null>(null)
-  //let lastClickedSquare: {row: number, col: number} | null =  null//coordinates of last clicked square, we use it to make move
+  const [lastClickedSquare, setLastClickedSquare] = React.useState<{row: number, col: number} | null>(null) //coordinates of last clicked square, we use it to make move
 
   const onClick = (row: number, col: number) => {//function that gets called by square component when square is clicked
     if (isGameOver) return
@@ -66,13 +65,39 @@ const Board: React.FC = () => {
     const getSquare = chess.get(squareNotation) //we check if anything is on the square
     
     if (lastClickedSquare == null && getSquare) { //if no square was clicked before (or move was made on last click)
-      setLegalMoves(getAvailableSquares(chess, row, col, boardRefColor))
+      let availableSquares = getAvailableSquares(chess, row, col, boardRefColor)
+      setLegalMoves(availableSquares)
+      if (availableSquares.length === 0) return
       setLastClickedSquare(square)
       return
     }
     else  {
       try{ //we try to make a move
-        let move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation})
+        if (lastClickedSquare == null)  return //if nothing is selected we can't make a move
+        if (!legalMoves.includes(squareNotation)){ //if we try to move to a illegal square
+          if (pieceOnSquare(chess, row, col, boardRefColor) === ""){ //if we try to move to empty square we unselect last square, no square is selected
+            setLegalMoves([])
+            setLastClickedSquare(null)
+            return
+          }
+
+          //otherwise we select last clicked square instead of previously selected, we select it only if it has legal moves
+          let availableSquares = getAvailableSquares(chess, row, col, boardRefColor)
+          setLegalMoves(availableSquares)
+          if (availableSquares.length === 0) return
+          setLastClickedSquare(square)
+          return
+        }
+        let pieceToMove = pieceOnSquare(chess, lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor) //we get piece that player is trying to move, used to check for promotion
+        let move : any = false
+
+        //we handle promotion scenario
+        if (pieceToMove === "pw" && squareNotation.charAt(1) === '8' || pieceToMove === "pb" && squareNotation.charAt(1) === '1') {
+          move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation, promotion: 'q'})
+        }
+        else{
+          move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation})
+        }
         if (move){
           setWhiteMove(!whiteMove) //we change whose move it is, this is mainly here for useEffect rendering
           if (chess.isGameOver()){
