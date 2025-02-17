@@ -3,6 +3,7 @@ import Square from './Square'
 
 import styles from '../styles/board.module.css'
 import { Chess } from 'chess.js'
+import Piece from './Piece'
 
 //converts row and col to square notation, for example toSquareNotation(0, 0, 'white') returns 'a1'
 const toSquareNotation = (row: number, col: number, color: string) : string => {
@@ -46,6 +47,7 @@ const pieceOnSquare = (chess: Chess, row: number, col: number, color: string) =>
   if (!piece) return ""
   return piece.type + piece.color
 }
+
 const Board: React.FC = () => {
 
   const [chess, setChess] = React.useState<Chess>(new Chess()) //chess object for board
@@ -56,10 +58,16 @@ const Board: React.FC = () => {
   const [legalMoves, setLegalMoves] = React.useState<string[]>([]) //legal moves of selected piece
   const [showNotationOnSquares, setShowNotationOnSquares] = React.useState<boolean>(true) //flag for showing notation on each square
   const [showLegalMoves, setShowLegalMoves] = React.useState<boolean>(true) //flag for showing legal moves of clicked piece
+  const [promoteAutomaticallyToQueen, setPromoteAutomaticallyToQueen] = React.useState<boolean>(false) //flag for automatically promoting to queen without promotion selector
+  const [showPromotionSelector, setShowPromotionSelector] = React.useState<boolean>(false) //flag for showing promotion selector
+
+  const [pieceToPromoteTo, setPieceToPromoteTo] = React.useState<string>("") //when we promote a piece this is where we store user selection to what piece to promote
+  const [promotionToMove, setPromotionToMove] = React.useState<string | null>(null) //when we promote a piece this is where we store move of promotion
+  const [promotionFromMove, setPromotionFromMove] = React.useState<string | null>(null) //when we promote a piece this is where we store move of promotion
 
   const [lastClickedSquare, setLastClickedSquare] = React.useState<{row: number, col: number} | null>(null) //coordinates of last clicked square, we use it to make move
 
-  const onClick = (row: number, col: number) => {//function that gets called by square component when square is clicked
+  const onClick = async (row: number, col: number) => {//function that gets called by square component when square is clicked
     if (isGameOver) return
     const square = {row: row, col: col}
     const squareNotation = toSquareNotation(row, col, boardRefColor) //we need square notation of clicked square to make a move
@@ -94,7 +102,15 @@ const Board: React.FC = () => {
 
         //we handle promotion scenario
         if (pieceToMove === "pw" && squareNotation.charAt(1) === '8' || pieceToMove === "pb" && squareNotation.charAt(1) === '1') {
-          move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation, promotion: 'q'})
+          if (promoteAutomaticallyToQueen) //if we want to automatically promote to queen we don't show promotion selector
+            move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation, promotion: 'q'})
+          else{ //otherwise we do
+            //we show promotion selector
+            setShowPromotionSelector(true)
+            //we set promotionToMove and promotionFromMove, used in useEffect to make a move
+            setPromotionToMove(squareNotation)
+            setPromotionFromMove(toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor))
+          }
         }
         else{
           move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation})
@@ -115,11 +131,25 @@ const Board: React.FC = () => {
     }
   }
 
+  //this is used for promotion
+  //this is called when we select piece to promote to
+  React.useEffect(() => {
+    if (pieceToPromoteTo !== '' && promotionToMove) {
+      chess.move({from: promotionFromMove!, to: promotionToMove, promotion: pieceToPromoteTo})
+      setPieceToPromoteTo('')
+      setPromotionToMove(null)
+      setShowPromotionSelector(false)
+      setWhiteMove(!whiteMove)
+      if (chess.isGameOver()) setIsGameOver(true)
+    }
+  }, [pieceToPromoteTo, promotionToMove, promotionFromMove]);
+
   React.useEffect(() => {
     function start() { //we generate board and set pieces on squares
       const boardTemp = []
       for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
+          //each square gets its key (its number), row and column number, info if it's highlighted (is legal to move selected piece on it), its notation etc.
           boardTemp.push(
             <Square key={i * 8 + j} row={i} col={j} chess={chess} 
                     piece={pieceOnSquare(chess, i, j, boardRefColor)} 
@@ -143,6 +173,27 @@ const Board: React.FC = () => {
     <>
       <div className={styles.board}>
         {board}
+        <div className={styles.promotionPickerContainer} style={{visibility: showPromotionSelector ? 'visible' : 'hidden'}} onClick={() => setShowPromotionSelector(false)}>
+          <div className={styles.promotionPicker}>
+            <a className={styles.promotionHeader}>Promote to:</a>
+            {chess.turn() === "w" &&
+            <>
+              <Square row={0} col={1} chess={chess} piece="qw" onClick={()=>{setPieceToPromoteTo("q")}} isHighlighted={false} isClicked={false} notation=""/>
+              <Square row={0} col={2} chess={chess} piece="rw" onClick={()=>{setPieceToPromoteTo("r")}} isHighlighted={false} isClicked={false} notation=""/>
+              <Square row={0} col={3} chess={chess} piece="bw" onClick={()=>{setPieceToPromoteTo("b")}} isHighlighted={false} isClicked={false} notation=""/>
+              <Square row={0} col={4} chess={chess} piece="nw" onClick={()=>{setPieceToPromoteTo("n")}} isHighlighted={false} isClicked={false} notation=""/>
+            </>
+            }
+            {chess.turn() === "b" &&
+            <>
+              <Square row={7} col={1} chess={chess} piece="qb" onClick={()=>{setPieceToPromoteTo("q")}} isHighlighted={false} isClicked={false} notation=""/>
+              <Square row={7} col={2} chess={chess} piece="rb" onClick={()=>{setPieceToPromoteTo("r")}} isHighlighted={false} isClicked={false} notation=""/>
+              <Square row={7} col={3} chess={chess} piece="bb" onClick={()=>{setPieceToPromoteTo("b")}} isHighlighted={false} isClicked={false} notation=""/>
+              <Square row={7} col={4} chess={chess} piece="nb" onClick={()=>{setPieceToPromoteTo("n")}} isHighlighted={false} isClicked={false} notation=""/>
+            </>
+            }
+          </div>
+        </div>
       </div>
     </>
   )
