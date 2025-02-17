@@ -1,26 +1,45 @@
+/*class for square*/
 .square{
     aspect-ratio: 1/1;
     display: flex;
     justify-content: center;
     align-items: center;
+    /*stuff important for notation*/
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.7rem;
+    position: relative;
 }
 
+/*class for notation*/
+.squareNotation{
+    position: absolute;
+    bottom: 0.1rem;
+    left: 0.1rem;
+    background-color: transparent;
+}
+
+/*for light squares*/
 .light{
     background-color: #f0d9b5;
+    color: #977253;
 }
-
+/*for dark squares*/
 .dark{
     background-color: #b58863;
+    color: #eddec7;
 }
 
 .light.clicked{
     background-color: #ab9b81;
+    color: #755741;
 }
 
 .dark.clicked{
     background-color: #654931;
+    color: #ebd3b0;
 }
 
+/*class to style dots that appear when clicking on piece to show available moves*/
 .highlight{
     position: absolute;
     border-radius: 50%;

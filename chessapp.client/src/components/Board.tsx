@@ -3,7 +3,6 @@ import Square from './Square'
 
 import styles from '../styles/board.module.css'
 import { Chess } from 'chess.js'
-import { get } from 'http'
 
 //converts row and col to square notation, for example toSquareNotation(0, 0, 'white') returns 'a1'
 const toSquareNotation = (row: number, col: number, color: string) : string => {
@@ -55,27 +54,29 @@ const Board: React.FC = () => {
   const [whiteMove, setWhiteMove] = React.useState<boolean>(true) //whose turn it is
   const [isGameOver, setIsGameOver] = React.useState<boolean>(false)
   const [legalMoves, setLegalMoves] = React.useState<string[]>([]) //legal moves of selected piece
+  const [showNotationOnSquares, setShowNotationOnSquares] = React.useState<boolean>(true) //flag for showing notation on each square
+  const [showLegalMoves, setShowLegalMoves] = React.useState<boolean>(true) //flag for showing legal moves of clicked piece
 
   const [lastClickedSquare, setLastClickedSquare] = React.useState<{row: number, col: number} | null>(null) //coordinates of last clicked square, we use it to make move
 
   const onClick = (row: number, col: number) => {//function that gets called by square component when square is clicked
     if (isGameOver) return
     const square = {row: row, col: col}
-    const squareNotation = toSquareNotation(row, col, boardRefColor) //we need square notation to make a move
+    const squareNotation = toSquareNotation(row, col, boardRefColor) //we need square notation of clicked square to make a move
     const getSquare = chess.get(squareNotation) //we check if anything is on the square
     
     if (lastClickedSquare == null && getSquare) { //if no square was clicked before (or move was made on last click)
       let availableSquares = getAvailableSquares(chess, row, col, boardRefColor)
-      setLegalMoves(availableSquares)
       if (availableSquares.length === 0) return
       setLastClickedSquare(square)
+      setLegalMoves(availableSquares)
       return
     }
     else  {
       try{ //we try to make a move
         if (lastClickedSquare == null)  return //if nothing is selected we can't make a move
         if (!legalMoves.includes(squareNotation)){ //if we try to move to a illegal square
-          if (pieceOnSquare(chess, row, col, boardRefColor) === ""){ //if we try to move to empty square we unselect last square, no square is selected
+          if (pieceOnSquare(chess, row, col, boardRefColor) === "" || getAvailableSquares(chess, row, col, boardRefColor).length === 0 || squareNotation === toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor)){ //if we try to move to empty square or square without legal moves we unselect last square, no square is selected
             setLegalMoves([])
             setLastClickedSquare(null)
             return
@@ -122,8 +123,9 @@ const Board: React.FC = () => {
           boardTemp.push(
             <Square key={i * 8 + j} row={i} col={j} chess={chess} 
                     piece={pieceOnSquare(chess, i, j, boardRefColor)} 
-                    onClick={onClick} isHighlighted={legalMoves.includes(toSquareNotation(i, j, boardRefColor))}
-                    isClicked={lastClickedSquare?.row === i && lastClickedSquare?.col === j}/>
+                    onClick={onClick} isHighlighted={showLegalMoves? legalMoves.includes(toSquareNotation(i, j, boardRefColor)) : false}
+                    isClicked={lastClickedSquare?.row === i && lastClickedSquare?.col === j} notation={showNotationOnSquares? toSquareNotation(i, j, boardRefColor) : ""}/>
+
           )
         }
       }

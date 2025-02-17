@@ -5,9 +5,10 @@ import Piece from './Piece'
 
 
 interface SquareProps {
-  row: number, col: number, chess: Chess, piece: string, onClick: (row: number, col: number) => void, isHighlighted: boolean, isClicked: boolean
+  row: number, col: number, chess: Chess, piece: string,
+  onClick: (row: number, col: number) => void, isHighlighted: boolean, isClicked: boolean, notation: string
 }
-const Square : React.FC<SquareProps> = ({row, col, chess, piece, onClick, isHighlighted, isClicked}) => {
+const Square : React.FC<SquareProps> = ({row, col, chess, piece, onClick, isHighlighted, isClicked, notation}) => {
   const [sRow, setSRow] = React.useState<number>(row)
   const [sCol, setSCol] = React.useState<number>(col)
 
@@ -15,6 +16,7 @@ const Square : React.FC<SquareProps> = ({row, col, chess, piece, onClick, isHigh
     <div className={`${styles.square} ${(row+col) % 2 === 0 ? styles.light : styles.dark} ${isClicked ? styles.clicked : ''}`} onClick={() => onClick(sRow, sCol)} >
       <Piece piece={piece} />
       {isHighlighted && <div className={styles.highlight}></div>}
+      <a className={`${styles.squareNotation} ${(row+col) % 2 === 0 ? styles.light : styles.dark} ${isClicked ? styles.clicked : ''}`}>{notation}</a>
     </div>
   );
 }
