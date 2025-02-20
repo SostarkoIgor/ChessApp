@@ -10,6 +10,27 @@
 
 }
 
+/*container for board and other things (like clock)*/
+.boardContainer{
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    justify-content: center;
+    align-items: center;
+
+}
+
+@media screen and (max-width: 640px) {
+    .boardContainer{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .board{
+        width: 100%;
+    }	
+}
+
 /*container for promotion picker*/
 .promotionPickerContainer{
     position: absolute;
@@ -43,4 +64,10 @@
     display: block;
     text-align: center;
     padding: 0.5rem;
+}
+
+@media screen and (max-width: 640px) {
+    .boardContainer{
+        flex-direction: column;
+    }
 }

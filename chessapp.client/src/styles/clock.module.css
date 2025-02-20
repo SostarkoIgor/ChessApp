@@ -1,0 +1,90 @@
+.clock {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    margin: 1rem;
+    background-color: rgba(79, 78, 78, 0);
+    border-radius: 0.5rem;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.time {
+    font-size: 2.5rem;
+    margin: 0.5rem;
+    font-family: 'Verdana', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+    background-color: rgba(233, 193, 117, 0.15);
+    padding: 1rem 1.5rem;
+    border-radius: 5px;
+    color: rgb(230, 230, 230);
+    white-space: nowrap;
+}
+
+.separator {
+    margin: 0 0.2rem;
+    font-size: 1.8rem;
+    color: rgb(180, 180, 180);
+}
+
+.clockBody {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-color: black;
+    border-radius: 5px;
+    flex-basis: 100%;
+    margin: 0.5rem;
+    padding: 0.5rem;
+    color: rgb(180, 180, 180);
+}
+
+.label{
+    font-size: 0.9rem;
+    margin: 0.2rem;
+    font-family: 'Verdana', monospace;
+    white-space: nowrap;
+    display: block;
+}
+
+.toggleOption{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(233, 193, 117, 0.15);
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    margin: 0.2rem;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.resign{
+    background-color: rgba(255, 0, 0, 0.211);
+}
+
+.icon{
+    margin-left: 0.5rem;
+}
+
+.options{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+}
+
+@media screen and (max-width: 640px) {
+    .clock {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .clockBody {
+        order: 1;
+    }
+}

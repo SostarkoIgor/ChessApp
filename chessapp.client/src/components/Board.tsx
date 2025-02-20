@@ -4,6 +4,7 @@ import Square from './Square'
 import styles from '../styles/board.module.css'
 import { Chess } from 'chess.js'
 import Piece from './Piece'
+import Clock from './Clock'
 
 //converts row and col to square notation, for example toSquareNotation(0, 0, 'white') returns 'a1'
 const toSquareNotation = (row: number, col: number, color: string) : string => {
@@ -170,7 +171,8 @@ const Board: React.FC = () => {
     return <></>
   }
   return (
-    <>
+    <div className={styles.boardContainer}>
+      <div></div>
       <div className={styles.board}>
         {board}
         <div className={styles.promotionPickerContainer} style={{visibility: showPromotionSelector ? 'visible' : 'hidden'}} onClick={() => setShowPromotionSelector(false)}>
@@ -195,7 +197,8 @@ const Board: React.FC = () => {
           </div>
         </div>
       </div>
-    </>
+      <Clock />
+    </div>
   )
 }
 
