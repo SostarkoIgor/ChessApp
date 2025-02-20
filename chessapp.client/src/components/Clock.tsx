@@ -1,7 +1,10 @@
 import React from "react"
 import styles from '../styles/clock.module.css'
 
-const Clock :React.FC = () => {
+interface ClockProps { flipBoardAction: () => void, showLegalMovesAction: () => void, showNotationOnSquaresAction: () => void, automaticQueenAction: () => void,
+                        promoteAutomaticallyToQueen: boolean, showLegalMoves: boolean, showNotationOnSquares: boolean
+                    }
+const Clock :React.FC<ClockProps> = ({flipBoardAction, showLegalMovesAction, showNotationOnSquaresAction, automaticQueenAction, promoteAutomaticallyToQueen, showLegalMoves, showNotationOnSquares}) => {
     return (
         <div className={styles.clock}>
             <div className={styles.time}>00<a className={styles.separator}>:</a>00</div>
@@ -16,25 +19,25 @@ const Clock :React.FC = () => {
                 </div>
                 <a className={styles.label}>Board options:</a>
                 <div className={styles.options}>
-                    <div className={styles.toggleOption}>
+                    <div className={styles.toggleOption} onClick={showNotationOnSquaresAction}>
                         Show notation
                         <span className={`material-symbols-outlined ${styles.icon}`}>
-                            check_box
+                            {showNotationOnSquares ? "check_box" : "check_box_outline_blank"}
                         </span>
                     </div>
-                    <div className={styles.toggleOption}>
+                    <div className={styles.toggleOption} onClick={showLegalMovesAction}>
                         Show legal moves
                         <span className={`material-symbols-outlined ${styles.icon}`}>
-                            check_box
+                            {showLegalMoves ? "check_box" : "check_box_outline_blank"}
                         </span>
                     </div>
-                    <div className={styles.toggleOption}>
+                    <div className={styles.toggleOption} onClick={automaticQueenAction}>
                         Automatic to queen
                         <span className={`material-symbols-outlined ${styles.icon}`}>
-                            check_box
+                            {promoteAutomaticallyToQueen ? "check_box" : "check_box_outline_blank"}
                         </span>
                     </div>
-                    <div className={styles.toggleOption}>
+                    <div className={styles.toggleOption} onClick={flipBoardAction}>
                         Flip board
                         <span className={`material-symbols-outlined ${styles.icon}`}>
                             autorenew

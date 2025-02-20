@@ -3,7 +3,6 @@ import Square from './Square'
 
 import styles from '../styles/board.module.css'
 import { Chess } from 'chess.js'
-import Piece from './Piece'
 import Clock from './Clock'
 
 //converts row and col to square notation, for example toSquareNotation(0, 0, 'white') returns 'a1'
@@ -163,7 +162,7 @@ const Board: React.FC = () => {
       setBoard(boardTemp)
     }
     start()
-  }, [chess, whiteMove, lastClickedSquare])
+  }, [chess, whiteMove, lastClickedSquare, boardRefColor, showNotationOnSquares, showLegalMoves, legalMoves]);
 
  
 
@@ -197,7 +196,15 @@ const Board: React.FC = () => {
           </div>
         </div>
       </div>
-      <Clock />
+      <Clock
+        flipBoardAction={()=>{(boardRefColor === "white")? setboardRefColor("black") : setboardRefColor("white")}} 
+        showLegalMovesAction={()=>{setShowLegalMoves(!showLegalMoves)}} 
+        showNotationOnSquaresAction={()=>{setShowNotationOnSquares(!showNotationOnSquares)}} 
+        automaticQueenAction={()=>{setPromoteAutomaticallyToQueen(!promoteAutomaticallyToQueen)}}
+        promoteAutomaticallyToQueen={promoteAutomaticallyToQueen}
+        showLegalMoves={showLegalMoves}
+        showNotationOnSquares={showNotationOnSquares}
+      />
     </div>
   )
 }
