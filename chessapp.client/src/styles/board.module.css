@@ -7,14 +7,13 @@
     aspect-ratio: 1/1;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
-
 }
 
 /*container for board and other things (like clock)*/
 .boardContainer{
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
-    justify-content: center;
+    justify-items: center;
     align-items: center;
 
 }

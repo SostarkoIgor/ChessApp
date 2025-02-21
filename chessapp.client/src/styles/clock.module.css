@@ -1,3 +1,4 @@
+/*container class for component*/
 .clock {
     display: flex;
     justify-content: start;
@@ -7,8 +8,10 @@
     border-radius: 0.5rem;
     flex-wrap: wrap;
     gap: 10px;
+    margin-left: 0;
 }
 
+/*container for time of a player*/
 .time {
     font-size: 2.5rem;
     margin: 0.5rem;
@@ -24,12 +27,14 @@
     white-space: nowrap;
 }
 
+/*separator between minutes and seconds*/
 .separator {
     margin: 0 0.2rem;
     font-size: 1.8rem;
     color: rgb(180, 180, 180);
 }
 
+/*clock body, contains settings*/
 .clockBody {
     display: flex;
     flex-direction: column;
@@ -43,6 +48,7 @@
     color: rgb(180, 180, 180);
 }
 
+/*label*/
 .label{
     font-size: 0.9rem;
     margin: 0.2rem;
@@ -51,6 +57,7 @@
     display: block;
 }
 
+/*toggle option class for options in clock body*/
 .toggleOption{
     display: flex;
     justify-content: center;
@@ -64,14 +71,17 @@
     width: fit-content;
 }
 
+/*resignation button*/
 .resign{
     background-color: rgba(255, 0, 0, 0.211);
 }
 
+/*class for icons*/
 .icon{
     margin-left: 0.5rem;
 }
 
+/*container for a single option*/
 .options{
     display: grid;
     grid-template-columns: 1fr 1fr;

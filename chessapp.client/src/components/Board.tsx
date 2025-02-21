@@ -4,6 +4,8 @@ import Square from './Square'
 import styles from '../styles/board.module.css'
 import { Chess } from 'chess.js'
 import Clock from './Clock'
+import GameWidget from './GameWidget'
+import { time } from 'console'
 
 //converts row and col to square notation, for example toSquareNotation(0, 0, 'white') returns 'a1'
 const toSquareNotation = (row: number, col: number, color: string) : string => {
@@ -67,8 +69,12 @@ const Board: React.FC = () => {
 
   const [lastClickedSquare, setLastClickedSquare] = React.useState<{row: number, col: number} | null>(null) //coordinates of last clicked square, we use it to make move
 
+  const [timeWhite, setTimeWhite] = React.useState<number>(3*60*1000) //default starting time on clock for white player
+  const [timeBlack, setTimeBlack] = React.useState<number>(3*60*1000) //default starting time on clock for black player
+  const [increment, setIncrement] = React.useState<number>(0) //increment for clock
+  const [isGameOngoing, setIsGameOngoing] = React.useState<boolean>(false) //flag for ongoing game
   const onClick = async (row: number, col: number) => {//function that gets called by square component when square is clicked
-    if (isGameOver) return
+    if (isGameOver || !isGameOngoing) return
     const square = {row: row, col: col}
     const squareNotation = toSquareNotation(row, col, boardRefColor) //we need square notation of clicked square to make a move
     const getSquare = chess.get(squareNotation) //we check if anything is on the square
@@ -162,7 +168,7 @@ const Board: React.FC = () => {
       setBoard(boardTemp)
     }
     start()
-  }, [chess, whiteMove, lastClickedSquare, boardRefColor, showNotationOnSquares, showLegalMoves, legalMoves]);
+  }, [chess, whiteMove, lastClickedSquare, boardRefColor, showNotationOnSquares, showLegalMoves, legalMoves, isGameOngoing]);
 
  
 
@@ -171,7 +177,8 @@ const Board: React.FC = () => {
   }
   return (
     <div className={styles.boardContainer}>
-      <div></div>
+      <GameWidget setIncrement={setIncrement} increment={increment} setTimeWhite={setTimeWhite} timeWhite={timeWhite} setTimeBlack={setTimeBlack} timeBlack={timeBlack}
+       setIsGameOngoing={()=>{setIsGameOngoing((prev) => !prev)}} isGameOngoing={isGameOngoing}/>
       <div className={styles.board}>
         {board}
         <div className={styles.promotionPickerContainer} style={{visibility: showPromotionSelector ? 'visible' : 'hidden'}} onClick={() => setShowPromotionSelector(false)}>
@@ -204,6 +211,10 @@ const Board: React.FC = () => {
         promoteAutomaticallyToQueen={promoteAutomaticallyToQueen}
         showLegalMoves={showLegalMoves}
         showNotationOnSquares={showNotationOnSquares}
+        timeWhite={timeWhite}
+        timeBlack={timeBlack}
+        increment={increment}
+        isGameOngoing={isGameOngoing}
       />
     </div>
   )

@@ -1,0 +1,71 @@
+/*container class for component*/
+.gameWidget{
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 10px;
+    background-color: black;
+    padding: 10px;
+    border-radius: 5px;
+    color: rgb(180, 180, 180);
+    margin: 1rem;
+    margin-right: 0;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Verdana', monospace;
+}
+
+/*container for time control settings*/
+.setGame{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+/*container for time input*/
+.timeInputContainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+/*container for input fields*/
+.timeInput{
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+}
+
+.timeInput input{
+    width: 20%;
+    min-width: 3rem;
+    padding: 0.5rem 0rem;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    outline: none;
+    border: none;
+    text-align: center;
+    margin: 0.2rem;
+    color: rgb(180, 180, 180);
+    background-color: rgba(233, 193, 117, 0.15);
+}
+
+/*start button*/
+.startButton{
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    margin: 0.2rem;
+    outline: none;
+    border: none;
+    color: rgb(180, 180, 180);
+    background-color: rgba(233, 193, 117, 0.15);
+    cursor: pointer;
+    width: fit-content;
+}
