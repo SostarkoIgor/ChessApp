@@ -15,22 +15,38 @@ corresponding state variables: promoteAutomaticallyToQueen, showLegalMoves, show
 and time variables timeWhite, timeBlack, increment
 and state variable isGameOngoing that indicates if the game is ongoing
 */
-interface ClockProps { flipBoardAction: () => void, showLegalMovesAction: () => void, showNotationOnSquaresAction: () => void, automaticQueenAction: () => void,
-                        promoteAutomaticallyToQueen: boolean, showLegalMoves: boolean, showNotationOnSquares: boolean,
-                        timeWhite: number, timeBlack: number, increment: number, isGameOngoing: boolean
+interface ClockProps{
+    flipBoardAction: () => void,
+    showLegalMovesAction: () => void, 
+    showNotationOnSquaresAction: () => void, 
+    automaticQueenAction: () => void,
+    resignAction: () => void,
+    promoteAutomaticallyToQueen: boolean,
+    showLegalMoves: boolean,
+    showNotationOnSquares: boolean,
+    timeWhite: number,
+    timeBlack: number,
+    increment: number,
+    isGameOngoing: boolean,
+    boardRefColor: string,
+    isWhiteMove: boolean
                     }
-const Clock :React.FC<ClockProps> = ({flipBoardAction, showLegalMovesAction, showNotationOnSquaresAction, automaticQueenAction,
-    promoteAutomaticallyToQueen, showLegalMoves, showNotationOnSquares, timeWhite, timeBlack, increment, isGameOngoing}) => {
+const Clock :React.FC<ClockProps> = ({flipBoardAction, showLegalMovesAction, showNotationOnSquaresAction, automaticQueenAction,resignAction,
+    promoteAutomaticallyToQueen, showLegalMoves, showNotationOnSquares, timeWhite, timeBlack, increment, isGameOngoing, boardRefColor, isWhiteMove}) => {
     const formatTime = (time: number) => {
         return time.toString().padStart(2, '0')
     }
     return (
         <div className={styles.clock}>
-            <div className={styles.time}>{formatTime(Math.floor(timeWhite/60/1000))}<a className={styles.separator}>:</a>{formatTime(Math.floor((timeWhite/1000)%60))}</div>
+            {boardRefColor === "white" ?
+                <div className={`${styles.time} ${isGameOngoing && !isWhiteMove && styles.timeHighlight}`}>{formatTime(Math.floor(timeBlack/60/1000))}<a className={styles.separator}>:</a>{formatTime(Math.floor((timeBlack/1000)%60))}</div>
+                :
+                <div className={styles.time}>{formatTime(Math.floor(timeWhite/60/1000))}<a className={styles.separator}>:</a>{formatTime(Math.floor((timeWhite/1000)%60))}</div>
+            }
             <div className={styles.clockBody}>
                 <a className={styles.label}>Game options:</a>
                 <div className={styles.options}>
-                    <div className={`${styles.toggleOption} ${styles.resign}`}>Resign
+                    <div className={`${styles.toggleOption} ${styles.resign}`} onClick={resignAction}>Resign
                         <span className={`material-symbols-outlined ${styles.icon}`}>
                             flag_2
                         </span>
@@ -65,7 +81,11 @@ const Clock :React.FC<ClockProps> = ({flipBoardAction, showLegalMovesAction, sho
                 </div>
                 
             </div>
-            <div className={styles.time}>{formatTime(Math.floor(timeBlack/60/1000))}<a className={styles.separator}>:</a>{formatTime(Math.floor((timeBlack/1000)%60))}</div>
+            {boardRefColor === "white" ?
+                <div className={`${styles.time} ${isGameOngoing && isWhiteMove && styles.timeHighlight}`}>{formatTime(Math.floor(timeWhite/60/1000))}<a className={styles.separator}>:</a>{formatTime(Math.floor((timeWhite/1000)%60))}</div>
+                :
+                <div className={styles.time}>{formatTime(Math.floor(timeBlack/60/1000))}<a className={styles.separator}>:</a>{formatTime(Math.floor((timeBlack/1000)%60))}</div>
+            }
         </div>
     )
 }

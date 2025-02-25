@@ -73,6 +73,9 @@ const Board: React.FC = () => {
   const [timeBlack, setTimeBlack] = React.useState<number>(3*60*1000) //default starting time on clock for black player
   const [increment, setIncrement] = React.useState<number>(0) //increment for clock
   const [isGameOngoing, setIsGameOngoing] = React.useState<boolean>(false) //flag for ongoing game
+
+  const [winner, setWinner] = React.useState<string>("") //winner of game
+  const [draw, setDraw] = React.useState<boolean>(false) //flag for draw
   const onClick = async (row: number, col: number) => {//function that gets called by square component when square is clicked
     if (isGameOver || !isGameOngoing) return
     const square = {row: row, col: col}
@@ -122,9 +125,21 @@ const Board: React.FC = () => {
           move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation})
         }
         if (move){
-          setWhiteMove(!whiteMove) //we change whose move it is, this is mainly here for useEffect rendering
+          setWhiteMove((prev) => !prev) //we change whose move it is, this is mainly here for useEffect rendering
+
+          if (chess.turn() === 'w') setTimeBlack((prev) => prev + increment) //when player makes a move, they get increment
+          else setTimeWhite((prev) => prev + increment)
+          
           if (chess.isGameOver()){
             setIsGameOver(true)
+            setWinner(chess.turn() === 'b' ? 'White' : 'Black')
+            setIsGameOngoing(false)
+          }
+
+          if (chess.isDraw()) {
+            setDraw(true)
+            setIsGameOver(true)
+            setIsGameOngoing(false)
           }
         }
       }
@@ -137,6 +152,24 @@ const Board: React.FC = () => {
     }
   }
 
+  //this is used to reset the game after the game is done so we can start with the new one
+  const resetGame = () => {
+    chess.reset()
+    setIsGameOngoing(false)
+    setIsGameOver(false)
+    setDraw(false)
+    setWinner("")
+    setWhiteMove(true)
+  }
+
+  //function called in clock component when "resign" button is clicked, player whose move it is resigns
+  const resign = () => {
+    setIsGameOngoing(false)
+    setIsGameOver(true)
+    setDraw(false)
+    setWinner(chess.turn() === 'w' ? 'Black' : 'White')
+  }
+
   //this is used for promotion
   //this is called when we select piece to promote to
   React.useEffect(() => {
@@ -145,10 +178,56 @@ const Board: React.FC = () => {
       setPieceToPromoteTo('')
       setPromotionToMove(null)
       setShowPromotionSelector(false)
-      setWhiteMove(!whiteMove)
-      if (chess.isGameOver()) setIsGameOver(true)
+      setWhiteMove((prev) => !prev)
+      if (chess.isGameOver()){
+        setIsGameOver(true)
+        setWinner(chess.turn() === 'w' ? 'White' : 'Black')
+        setIsGameOngoing(false)
+      }
+      if (chess.isDraw()) {
+        setDraw(true)
+        setIsGameOver(true)
+        setIsGameOngoing(false)
+      }
     }
   }, [pieceToPromoteTo, promotionToMove, promotionFromMove]);
+
+  //this is used for counting time
+  React.useEffect(() => {
+    if (isGameOngoing) {
+      const interval = setInterval(() => {
+        if (whiteMove && timeWhite > 0) {
+          setTimeWhite((prev) => Math.max(prev - 100,0))
+        }
+        if (!whiteMove && timeBlack > 0) {
+          setTimeBlack((prev) => Math.max(prev - 100,0))
+        }
+      }, 100)
+      return () => clearInterval(interval)
+    }
+  }, [whiteMove, isGameOngoing])
+
+  //this is used to check if someone lost on time
+  React.useEffect(() => {
+    if (timeWhite === 0) {
+      setIsGameOver(true)
+      setWinner("Black")
+      setIsGameOngoing(false)
+    }
+    else if (timeBlack === 0) {
+      setIsGameOver(true)
+      setWinner("White")
+      setIsGameOngoing(false)
+    }
+  }, [timeWhite, timeBlack])
+
+  //this is used to clear move suggestions when game is over
+  React.useEffect(() => {
+    if (isGameOver) {
+      setLegalMoves([])
+      setLastClickedSquare(null)
+    }
+  }, [isGameOver])
 
   React.useEffect(() => {
     function start() { //we generate board and set pieces on squares
@@ -177,8 +256,10 @@ const Board: React.FC = () => {
   }
   return (
     <div className={styles.boardContainer}>
-      <GameWidget setIncrement={setIncrement} increment={increment} setTimeWhite={setTimeWhite} timeWhite={timeWhite} setTimeBlack={setTimeBlack} timeBlack={timeBlack}
-       setIsGameOngoing={()=>{setIsGameOngoing((prev) => !prev)}} isGameOngoing={isGameOngoing}/>
+      <GameWidget setIncrement={setIncrement} increment={increment} setTimeWhite={setTimeWhite}
+                  timeWhite={timeWhite} setTimeBlack={setTimeBlack} timeBlack={timeBlack}
+                  setIsGameOngoing={()=>{setIsGameOngoing((prev) => !prev)}} isGameOngoing={isGameOngoing}
+                  isGameOver={isGameOver} isDraw={draw} didWhiteWin={winner === "White"} resetGame={resetGame}/>
       <div className={styles.board}>
         {board}
         <div className={styles.promotionPickerContainer} style={{visibility: showPromotionSelector ? 'visible' : 'hidden'}} onClick={() => setShowPromotionSelector(false)}>
@@ -215,6 +296,9 @@ const Board: React.FC = () => {
         timeBlack={timeBlack}
         increment={increment}
         isGameOngoing={isGameOngoing}
+        boardRefColor={boardRefColor}
+        isWhiteMove={whiteMove}
+        resignAction={resign}
       />
     </div>
   )

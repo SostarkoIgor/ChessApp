@@ -12,12 +12,20 @@ interface GameWidgetProps {
     timeBlack: number,
     increment: number,
     isGameOngoing: boolean,
+    isGameOver: boolean,
+    isDraw: boolean,
+    didWhiteWin: boolean,
     setTimeWhite: (time: number) => void,
     setTimeBlack: (time: number) => void,
     setIncrement: (increment: number) => void,
-    setIsGameOngoing: () => void
+    setIsGameOngoing: () => void,
+    resetGame: () => void
 }
-const GameWidget : React.FC<GameWidgetProps> = ({timeWhite, timeBlack, increment, isGameOngoing, setTimeWhite, setTimeBlack, setIncrement, setIsGameOngoing}) => {
+const GameWidget : React.FC<GameWidgetProps> = (
+    {timeWhite, timeBlack, increment, isGameOngoing,
+        setTimeWhite, setTimeBlack, setIncrement, setIsGameOngoing,
+        isGameOver, isDraw, didWhiteWin, resetGame}
+) => {
     const [whiteTimeMins, setWhiteTimeMins] = React.useState<number>(Math.floor(timeWhite/60/1000)) //time of white player, only minutes, initially set to default value read from parent component (Board)
     const [whiteTimeSecs, setWhiteTimeSecs] = React.useState<number>(Math.floor((timeWhite/1000)%60)) //time of white - seconds, whiteTimeMins+whiteTimeSecs = total time a player has
     const [blackTimeMins, setBlackTimeMins] = React.useState<number>(Math.floor(timeBlack/60/1000)) //time of black player - minute component
@@ -34,7 +42,7 @@ const GameWidget : React.FC<GameWidgetProps> = ({timeWhite, timeBlack, increment
     }
     return (
         <div className={styles.gameWidget}>
-            {!isGameOngoing &&
+            {!isGameOngoing && !isGameOver &&
                 <div className={styles.setGame}>
                         <div className={styles.timeInputContainer}>
                             Set time of white:
@@ -55,6 +63,17 @@ const GameWidget : React.FC<GameWidgetProps> = ({timeWhite, timeBlack, increment
                             
                         </div>
                         <button className={styles.startButton} onClick={startGame}>Start game</button>
+                </div>
+            }
+            {isGameOver && 
+                <div className={styles.gameOver}>
+                    {isDraw ? "Draw" : didWhiteWin ? "White won" : "Black won"}
+                    <button className={styles.startButton} onClick={resetGame}>New game</button>
+                </div>
+            }
+            {isGameOngoing && 
+                <div className={styles.gameOngoing}>
+                    Game ongoing
                 </div>
             }
             

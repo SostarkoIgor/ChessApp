@@ -69,3 +69,13 @@
     cursor: pointer;
     width: fit-content;
 }
+
+/*class for output of game state and result*/
+.gameOngoing, .gameOver{
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
+}

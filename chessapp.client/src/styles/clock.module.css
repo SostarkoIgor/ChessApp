@@ -88,6 +88,10 @@
     gap: 5px;
 }
 
+.timeHighlight{
+    background-color: rgba(242, 162, 13, 0.296);
+}
+
 @media screen and (max-width: 640px) {
     .clock {
         flex-direction: column;
