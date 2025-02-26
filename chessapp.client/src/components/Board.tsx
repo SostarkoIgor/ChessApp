@@ -6,6 +6,7 @@ import { Chess } from 'chess.js'
 import Clock from './Clock'
 import GameWidget from './GameWidget'
 import { time } from 'console'
+import { startConnection, onMessageReceived, sendMessage } from '../services/signalRService'
 
 //converts row and col to square notation, for example toSquareNotation(0, 0, 'white') returns 'a1'
 const toSquareNotation = (row: number, col: number, color: string) : string => {
@@ -125,6 +126,8 @@ const Board: React.FC = () => {
           move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation})
         }
         if (move){
+          await handleSendMessage()
+
           setWhiteMove((prev) => !prev) //we change whose move it is, this is mainly here for useEffect rendering
 
           if (chess.turn() === 'w') setTimeBlack((prev) => prev + increment) //when player makes a move, they get increment
@@ -170,26 +173,35 @@ const Board: React.FC = () => {
     setWinner(chess.turn() === 'w' ? 'Black' : 'White')
   }
 
+  const handleSendMessage = async () => {
+    await sendMessage("user", "message")
+  }
+
   //this is used for promotion
   //this is called when we select piece to promote to
   React.useEffect(() => {
-    if (pieceToPromoteTo !== '' && promotionToMove) {
-      chess.move({from: promotionFromMove!, to: promotionToMove, promotion: pieceToPromoteTo})
-      setPieceToPromoteTo('')
-      setPromotionToMove(null)
-      setShowPromotionSelector(false)
-      setWhiteMove((prev) => !prev)
-      if (chess.isGameOver()){
-        setIsGameOver(true)
-        setWinner(chess.turn() === 'w' ? 'White' : 'Black')
-        setIsGameOngoing(false)
-      }
-      if (chess.isDraw()) {
-        setDraw(true)
-        setIsGameOver(true)
-        setIsGameOngoing(false)
+    const promotionFunc = async () => {
+      if (pieceToPromoteTo !== '' && promotionToMove) {
+        chess.move({from: promotionFromMove!, to: promotionToMove, promotion: pieceToPromoteTo})
+        handleSendMessage()
+        setPieceToPromoteTo('')
+        setPromotionToMove(null)
+        setShowPromotionSelector(false)
+        setWhiteMove((prev) => !prev)
+        if (chess.isGameOver()){
+          setIsGameOver(true)
+          setWinner(chess.turn() === 'w' ? 'White' : 'Black')
+          setIsGameOngoing(false)
+        }
+        if (chess.isDraw()) {
+          setDraw(true)
+          setIsGameOver(true)
+          setIsGameOngoing(false)
+        }
       }
     }
+    promotionFunc()
+    
   }, [pieceToPromoteTo, promotionToMove, promotionFromMove]);
 
   //this is used for counting time
@@ -249,7 +261,13 @@ const Board: React.FC = () => {
     start()
   }, [chess, whiteMove, lastClickedSquare, boardRefColor, showNotationOnSquares, showLegalMoves, legalMoves, isGameOngoing]);
 
- 
+  //this is used to get messages from server
+  React.useEffect(() => {
+    startConnection()
+    onMessageReceived((user: string, message: string) => {
+      console.log(user, message)
+    })
+  }, [])
 
   if (!board || board.length === 0) {
     return <></>
