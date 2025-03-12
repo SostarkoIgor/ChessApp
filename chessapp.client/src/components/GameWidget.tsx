@@ -1,6 +1,6 @@
 import React from "react"
 import styles from '../styles/gameWidget.module.css'
-import { time } from "console"
+import { createGame } from "../services/signalRService"
 
 /*
 component for the game widget
@@ -15,6 +15,7 @@ interface GameWidgetProps {
     isGameOver: boolean,
     isDraw: boolean,
     didWhiteWin: boolean,
+    gameCode: string,
     setTimeWhite: (time: number) => void,
     setTimeBlack: (time: number) => void,
     setIncrement: (increment: number) => void,
@@ -24,7 +25,7 @@ interface GameWidgetProps {
 const GameWidget : React.FC<GameWidgetProps> = (
     {timeWhite, timeBlack, increment, isGameOngoing,
         setTimeWhite, setTimeBlack, setIncrement, setIsGameOngoing,
-        isGameOver, isDraw, didWhiteWin, resetGame}
+        isGameOver, isDraw, didWhiteWin, resetGame, gameCode}
 ) => {
     const [whiteTimeMins, setWhiteTimeMins] = React.useState<number>(Math.floor(timeWhite/60/1000)) //time of white player, only minutes, initially set to default value read from parent component (Board)
     const [whiteTimeSecs, setWhiteTimeSecs] = React.useState<number>(Math.floor((timeWhite/1000)%60)) //time of white - seconds, whiteTimeMins+whiteTimeSecs = total time a player has
@@ -35,6 +36,7 @@ const GameWidget : React.FC<GameWidgetProps> = (
     //function called when start game button is clicked
     //sets both players' time, increment and sets isGameOngoing to true
     const startGame = () => {
+        createGame(whiteTimeMins*60*1000+whiteTimeSecs*1000,blackTimeMins*60*1000+blackTimeSecs*1000,incrementSecs*1000)
         setTimeWhite(whiteTimeMins*60*1000+whiteTimeSecs*1000)
         setTimeBlack(blackTimeMins*60*1000+blackTimeSecs*1000)
         setIncrement(incrementSecs*1000)
@@ -73,7 +75,7 @@ const GameWidget : React.FC<GameWidgetProps> = (
             }
             {isGameOngoing && 
                 <div className={styles.gameOngoing}>
-                    Game ongoing
+                    Game ongoing, game code: {gameCode}
                 </div>
             }
             

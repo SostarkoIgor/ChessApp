@@ -10,6 +10,8 @@ const hubConnection = new signalR.HubConnectionBuilder()
     .withAutomaticReconnect()
     .build()
 
+    
+
     let isStarting = false
 
     export const startConnection = async (): Promise<void> => {
@@ -29,6 +31,31 @@ const hubConnection = new signalR.HubConnectionBuilder()
             isStarting = false;
         }
     };
+
+export const setUpConnection = async (setGameCode: (code: string) => void, setPlayerJoined: (joined: boolean) => void, setWhiteTime: (time: number) => void, setBlackTime: (time: number) => void, setIncrement: (time:number)=>void): Promise<void> => {
+    hubConnection.on("GameCreated", (code) => {
+        setGameCode(code)
+    })
+
+    hubConnection.on("GameJoined", (white, black, increment) => {
+        setWhiteTime(white)
+        setBlackTime(black)
+        setPlayerJoined(true)
+        setIncrement(increment)
+    })
+}
+
+export const createGame = (timeWhite:number, timeBlack:number, increment:number) => {
+    if (hubConnection) {
+        hubConnection.invoke("CreateGame", timeWhite, timeBlack, increment);
+    }
+};
+
+export const joinGame = (code : string) => {
+    if (hubConnection) {
+        hubConnection.invoke("JoinGame", code);
+    }
+};
 
 export const sendMessage = async (user: string, message: string): Promise<void> => {
     try {

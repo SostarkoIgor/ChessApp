@@ -6,7 +6,7 @@ import { Chess } from 'chess.js'
 import Clock from './Clock'
 import GameWidget from './GameWidget'
 import { time } from 'console'
-import { startConnection, onMessageReceived, sendMessage } from '../services/signalRService'
+import { startConnection, onMessageReceived, sendMessage, setUpConnection } from '../services/signalRService'
 
 //converts row and col to square notation, for example toSquareNotation(0, 0, 'white') returns 'a1'
 const toSquareNotation = (row: number, col: number, color: string) : string => {
@@ -77,8 +77,11 @@ const Board: React.FC = () => {
 
   const [winner, setWinner] = React.useState<string>("") //winner of game
   const [draw, setDraw] = React.useState<boolean>(false) //flag for draw
+
+  const [code, setCode] = React.useState<string>("") //game code
+  const [playerJoined, setPlayerJoined] = React.useState<boolean>(false) //flag for player joined game
   const onClick = async (row: number, col: number) => {//function that gets called by square component when square is clicked
-    if (isGameOver || !isGameOngoing) return
+    if (isGameOver || !isGameOngoing || !playerJoined) return
     const square = {row: row, col: col}
     const squareNotation = toSquareNotation(row, col, boardRefColor) //we need square notation of clicked square to make a move
     const getSquare = chess.get(squareNotation) //we check if anything is on the square
@@ -206,7 +209,7 @@ const Board: React.FC = () => {
 
   //this is used for counting time
   React.useEffect(() => {
-    if (isGameOngoing) {
+    if (isGameOngoing && playerJoined) {
       const interval = setInterval(() => {
         if (whiteMove && timeWhite > 0) {
           setTimeWhite((prev) => Math.max(prev - 100,0))
@@ -217,7 +220,7 @@ const Board: React.FC = () => {
       }, 100)
       return () => clearInterval(interval)
     }
-  }, [whiteMove, isGameOngoing])
+  }, [whiteMove, isGameOngoing, playerJoined])
 
   //this is used to check if someone lost on time
   React.useEffect(() => {
@@ -259,14 +262,16 @@ const Board: React.FC = () => {
       setBoard(boardTemp)
     }
     start()
-  }, [chess, whiteMove, lastClickedSquare, boardRefColor, showNotationOnSquares, showLegalMoves, legalMoves, isGameOngoing]);
+  }, [chess, whiteMove, lastClickedSquare, boardRefColor, showNotationOnSquares, showLegalMoves, legalMoves, isGameOngoing, playerJoined]);
 
   //this is used to get messages from server
   React.useEffect(() => {
     startConnection()
+    setUpConnection(setCode, setPlayerJoined, setTimeWhite, setTimeBlack, setIncrement)
     onMessageReceived((user: string, message: string) => {
       console.log(user, message)
     })
+    
   }, [])
 
   if (!board || board.length === 0) {
@@ -277,7 +282,8 @@ const Board: React.FC = () => {
       <GameWidget setIncrement={setIncrement} increment={increment} setTimeWhite={setTimeWhite}
                   timeWhite={timeWhite} setTimeBlack={setTimeBlack} timeBlack={timeBlack}
                   setIsGameOngoing={()=>{setIsGameOngoing((prev) => !prev)}} isGameOngoing={isGameOngoing}
-                  isGameOver={isGameOver} isDraw={draw} didWhiteWin={winner === "White"} resetGame={resetGame}/>
+                  isGameOver={isGameOver} isDraw={draw} didWhiteWin={winner === "White"} resetGame={resetGame}
+                  gameCode={code}/>
       <div className={styles.board}>
         {board}
         <div className={styles.promotionPickerContainer} style={{visibility: showPromotionSelector ? 'visible' : 'hidden'}} onClick={() => setShowPromotionSelector(false)}>
@@ -318,6 +324,7 @@ const Board: React.FC = () => {
         isWhiteMove={whiteMove}
         resignAction={resign}
       />
+      {code}
     </div>
   )
 }
