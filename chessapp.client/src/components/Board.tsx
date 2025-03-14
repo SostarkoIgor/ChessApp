@@ -63,6 +63,7 @@ const Board: React.FC = () => {
   const [showLegalMoves, setShowLegalMoves] = React.useState<boolean>(true) //flag for showing legal moves of clicked piece
   const [promoteAutomaticallyToQueen, setPromoteAutomaticallyToQueen] = React.useState<boolean>(false) //flag for automatically promoting to queen without promotion selector
   const [showPromotionSelector, setShowPromotionSelector] = React.useState<boolean>(false) //flag for showing promotion selector
+  const [playerColor, setPlayerColor] = React.useState<string>('white') //color of player, white or black
 
   const [pieceToPromoteTo, setPieceToPromoteTo] = React.useState<string>("") //when we promote a piece this is where we store user selection to what piece to promote
   const [promotionToMove, setPromotionToMove] = React.useState<string | null>(null) //when we promote a piece this is where we store move of promotion
@@ -79,7 +80,7 @@ const Board: React.FC = () => {
   const [draw, setDraw] = React.useState<boolean>(false) //flag for draw
 
   const [code, setCode] = React.useState<string>("") //game code
-  const [playerJoined, setPlayerJoined] = React.useState<boolean>(false) //flag for player joined game
+  const [playerJoined, setPlayerJoined] = React.useState<boolean>(false) //flag for if second player has joined the game, if not game can not start yet
   const onClick = async (row: number, col: number) => {//function that gets called by square component when square is clicked
     if (isGameOver || !isGameOngoing || !playerJoined) return
     const square = {row: row, col: col}
@@ -87,6 +88,7 @@ const Board: React.FC = () => {
     const getSquare = chess.get(squareNotation) //we check if anything is on the square
     
     if (lastClickedSquare == null && getSquare) { //if no square was clicked before (or move was made on last click)
+      if (getSquare.color === "w" && playerColor === "black" || getSquare.color === "b" && playerColor === "white") return
       let availableSquares = getAvailableSquares(chess, row, col, boardRefColor)
       if (availableSquares.length === 0) return
       setLastClickedSquare(square)
@@ -129,7 +131,7 @@ const Board: React.FC = () => {
           move=chess.move({from: toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), to: squareNotation})
         }
         if (move){
-          await handleSendMessage()
+          await handleSendMessage(code, toSquareNotation(lastClickedSquare?.row!, lastClickedSquare?.col!, boardRefColor), squareNotation, false, "")
 
           setWhiteMove((prev) => !prev) //we change whose move it is, this is mainly here for useEffect rendering
 
@@ -176,8 +178,8 @@ const Board: React.FC = () => {
     setWinner(chess.turn() === 'w' ? 'Black' : 'White')
   }
 
-  const handleSendMessage = async () => {
-    await sendMessage("user", "message")
+  const handleSendMessage = async (gameCode: string, squareFrom: string, squareTo: string, promotion:boolean, promotionTo:string) => {
+    await sendMessage(gameCode, squareFrom, squareTo, promotion, promotionTo)
   }
 
   //this is used for promotion
@@ -186,7 +188,7 @@ const Board: React.FC = () => {
     const promotionFunc = async () => {
       if (pieceToPromoteTo !== '' && promotionToMove) {
         chess.move({from: promotionFromMove!, to: promotionToMove, promotion: pieceToPromoteTo})
-        handleSendMessage()
+        handleSendMessage(code, promotionFromMove!, promotionToMove, true, pieceToPromoteTo)
         setPieceToPromoteTo('')
         setPromotionToMove(null)
         setShowPromotionSelector(false)
@@ -267,9 +269,15 @@ const Board: React.FC = () => {
   //this is used to get messages from server
   React.useEffect(() => {
     startConnection()
-    setUpConnection(setCode, setPlayerJoined, setTimeWhite, setTimeBlack, setIncrement)
-    onMessageReceived((user: string, message: string) => {
-      console.log(user, message)
+    setUpConnection(setCode, setPlayerJoined, setTimeWhite, setTimeBlack, setIncrement, (color)=>{setboardRefColor(color); setPlayerColor(color)}, ()=>{setIsGameOngoing((prev) => !prev)})
+    onMessageReceived((squareFrom: string, squareTo: string, promotion: boolean, promotionTo: string) => {
+      if (promotion) {
+        chess.move({from: squareFrom!, to: squareTo, promotion: promotionTo})
+      }
+      else{
+        chess.move({from: squareFrom!, to: squareTo})
+      }
+      setWhiteMove((prev) => !prev)
     })
     
   }, [])
@@ -283,7 +291,7 @@ const Board: React.FC = () => {
                   timeWhite={timeWhite} setTimeBlack={setTimeBlack} timeBlack={timeBlack}
                   setIsGameOngoing={()=>{setIsGameOngoing((prev) => !prev)}} isGameOngoing={isGameOngoing}
                   isGameOver={isGameOver} isDraw={draw} didWhiteWin={winner === "White"} resetGame={resetGame}
-                  gameCode={code}/>
+                  gameCode={code} setboardRefColor={setboardRefColor} setGameCode={setCode} setPlayerColor={setboardRefColor}/>
       <div className={styles.board}>
         {board}
         <div className={styles.promotionPickerContainer} style={{visibility: showPromotionSelector ? 'visible' : 'hidden'}} onClick={() => setShowPromotionSelector(false)}>
